@@ -74,6 +74,21 @@ def filter_near_customer(df, cust_id, n_near_cust, target):
         df_filter = df_filter.iloc[index_cust - (up_index - up_lift):index_cust + (down_index + (down_lift + 1)),:]
     return df_filter
 
+## Function to fin in histogram in which bin is a value for visualization purpose
+def bin_location(bins, value):
+    '''Function to locate the bin were a single value is located in order to apply formatting to this specific bin
+    bins --> list of bins return by plt.hist plot
+    value --> the sepcific value to locate in a matplotlib histogramm
+    it returns the index value in bins where value is located'''
+    # set the index counter
+    count = 0
+    # playing for loop in bins list
+    for b in bins:
+        if value >= b:
+            value_bin_ind = count
+        count+=1
+    return value_bin_ind
+
 # ------------ Set base configuration for streamlit -------
 st.set_page_config(layout="wide")
 
@@ -103,7 +118,7 @@ st.write("## **Classification d'une demande de crédit**")
 st.write('### Informations générales clients (index = ID de la demande de prêt):')
 st.write('Dimension des données: ' + str(df_test_sample_origin.shape[0]) + ' lignes ' + str(df_test_sample_origin.shape[1]) + ' colonnes')
 selections = st.multiselect('Vous pouvez ajouter ou enlever une donnée présente dans cette liste:', df_test_sample_origin.columns.tolist(),
- df_test_sample_origin.columns.tolist()[0:4])
+ df_test_sample_origin.columns.tolist()[0:10])
 st.dataframe(df_test_sample_origin.loc[:,selections])
 
 ## Display selected client data (checkbox condition: 'Données client') ##
@@ -122,9 +137,11 @@ if client_data:
         plt.title(f'Diagramme bar données ID: {selected_credit}')
         sns.barplot(x=df_test_sample[features].loc[selected_credit, selections_client0].index, y=df_test_sample[features].loc[selected_credit, selections_client0].values)
         plt.xlabel('Features')
-        plt.ylabel('Valeur')
+        plt.xticks(fontsize=8, rotation=45)
+        plt.ylabel('Valeur normalisée')
+        plt.yticks(fontsize=8)
         #### Display the graph ####
-        col2.pyplot(fig_client_info, dpi=300)
+        col2.pyplot(fig_client_info, clear_figure=True)
     else:
         col2.write("Vous avez sélectionné trop de feature!!! Le graphique n'est pas affiché")
 
@@ -221,11 +238,11 @@ if client_analysis:
     df_nearest_client = filter_near_customer(df_test_sample, selected_credit, nearest_number, 'TARGET_PROB')
     ### bivariate analysis where we can choose the features to plot ###
     st.write('#### *Analyse bivariée*')
-    ### define columns to split for several selection box ###
+    #### define columns to split for several selection box ####
     col11, col12 = st.columns(2)
     feat1 = col11.selectbox('Feature 1', features, 0)
     feat2 = col12.selectbox('Feature 2', features, 1)
-    ### Plot scatter plot with plotly ###
+    #### Plot scatter plot with plotly ####
     figure_biv = go.Figure()
     #### all client scatter filtered with PREDICT_PROB column and treshold (accepted / denied) ####
     figure_biv.add_trace(go.Scatter(x=df_test_sample.loc[df_test_sample['TARGET_PROB'] < treshold][feat1], 
@@ -259,4 +276,61 @@ if client_analysis:
                     xaxis={'title':feat1}, yaxis={'title':feat2}, coloraxis={'colorbar':{'title':'Score'}, 
                                                                                 'colorscale':'RdYlGn_r', 'cmin':0, 'cmax':1, 'showscale':True})
     st.plotly_chart(figure_biv, use_container_width=True)
+    ### Univariate analysis choose type of plot (boxplot or histogram/bargraph) ###
+    st.write('#### *Analyse univariée*')
+    #### select between boxplot or histogram/barplot distributions for univariate analysis ####
+    selected_anaysis_gh = st.selectbox('Sélectionner un graphique', ['Boxplot', 'Histogramme/bâton'])
+    if selected_anaysis_gh == 'Boxplot':
+        ##### Add the possibility to display several features on the same plot #####
+        selections_analysis = st.multiselect('Vous pouvez ajouter ou enlever une donnée présente dans cette liste:', df_test_sample[features].columns.tolist(),
+        df_test_sample[features].columns.tolist()[0:5])
+        ##### display boxplot #####
+        ###### create in each df a columns to identifie them and use hue parameters ######
+        df_test_sample['data_origin'] = 'clients'
+        df_nearest_client['data_origin'] = 'clients_similaires'
+        ###### concatenate two df before drawing boxplot ######
+        cdf = pd.concat([df_test_sample[selections_analysis + ['data_origin']], 
+        df_nearest_client[selections_analysis + ['data_origin']]])
+        ###### Create DataFrame from the selected client loan ID series ######
+        df_loan = pd.DataFrame([df_test_sample.loc[selected_credit, features].tolist()], columns=features)
+        ###### using melt mehtod to adapt our concatenate dataframe to the format that we want (for displaying several features) with Seaborn ######
+        cdf = pd.melt(cdf, id_vars='data_origin', var_name='Features')
+        df_loan = pd.melt(df_loan[selections_analysis], var_name='Features')
+        df_loan['data_origin'] = 'ID_prêt_client_selectionné'
+        ###### plotting figure ######
+        figure_boxplot = plt.figure(figsize=(4,2))
+        ax = sns.boxplot(x = 'Features', y = 'value', hue='data_origin', data=cdf , showfliers=False, palette = 'tab10')
+        sns.stripplot(x = 'Features', y = 'value', data = df_loan, hue = 'data_origin', palette=['yellow'], s=8, linewidth=1.5, edgecolor='black')
+        plt.xticks(fontsize=6, rotation=45)
+        plt.yticks(fontsize=6)
+        plt.ylabel('Valeur normalisée')
+        leg = plt.legend( bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+        ###### modify legend object for selected client loan ID to match graph style ######
+        leg.legendHandles[-1].set_linewidth(1.5)
+        leg.legendHandles[-1].set_edgecolor('black')
+        st.pyplot(figure_boxplot, clear_figure=True)
+    if selected_anaysis_gh == 'Histogramme/bâton':
+        ##### Add the posibility to choose the distribution we want to see #####
+        feat3 = st.selectbox('Feature', features,0)
+        loan = df_test_sample.loc[selected_credit, :]
+        figure_h=plt.figure(figsize=(10,4))
+        figure_h.add_subplot(1,2,1)
+        plt.title('Tous les clients', fontweight='bold')
+        ###### careful, color used here for bins are maching seaborn previous ones used ######
+        n, bins, patches = plt.hist(x = df_test_sample[feat3], color='#1f77b4', linewidth=1, edgecolor='black')
+        ###### here we are setting the color bins for our selected loan customer ######
+        patches[bin_location(bins, loan[feat3])].set_fc('yellow')
+        plt.xlabel(f'{feat3} (Normalisé)')
+        plt.xticks(bins, fontsize=8, rotation=45)
+        plt.ylabel('Nombre total')
+        plt.yticks(fontsize=8)
+        figure_h.add_subplot(1,2,2)
+        plt.title('Clients similaires', fontweight='bold')
+        n, bins, patches = plt.hist(x = df_nearest_client[feat3], color='#ff7f0e', linewidth=1, edgecolor='black')
+        patches[bin_location(bins, loan[feat3])].set_fc('yellow')
+        plt.xlabel(f'{feat3} (Normalisé)')
+        plt.xticks(bins, fontsize=8, rotation=45)
+        plt.ylabel('Nombre Total')
+        plt.yticks(fontsize=8)
+        st.pyplot(figure_h, clear_figure=True)
     
