@@ -83,8 +83,9 @@ def bin_location(bins, value):
     # set the index counter
     count = 0
     # playing for loop in bins list
+    value_bin_ind = count
     for b in bins:
-        if value >= b:
+        if value > b:
             value_bin_ind = count
         count+=1
     return value_bin_ind
@@ -163,7 +164,7 @@ if client_pred_score:
         st.write('Demande de prêt acceptée!')
     else:
         #### add condition in function of the value of the prediction, if over the treshold but near should be discussed ####
-        if prediction_value > treshold and prediction_value <= 0.55:
+        if prediction_value > treshold and prediction_value <= 0.52:
             st.write('Demande de prêt refusée --> à discuter avec le conseiller')
         else:
             st.write('Demande de prêt refusée!')
@@ -179,8 +180,8 @@ if client_pred_score:
              'steps' : [
                  {'range': [0, 30], 'color': "darkgreen"},
                  {'range': [30, (treshold*100)], 'color': "lightgreen"},
-                 {'range': [(treshold*100),55], 'color': "orange"},
-                 {'range': [55, 100], 'color':"red"}],
+                 {'range': [(treshold*100),52], 'color': "orange"},
+                 {'range': [52, 100], 'color':"red"}],
              'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': treshold*100}}))
     st.plotly_chart(fig_gauge)
 
