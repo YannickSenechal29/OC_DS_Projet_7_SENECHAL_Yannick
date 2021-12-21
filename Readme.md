@@ -9,12 +9,12 @@ Here is a summary of file and folder available on it:
 - Folder API: Contain all the developpment work for the model API (code + csv file + pkl files).
 - Folder Dahsboard: Contain all the developpement work for the dashboard (code + csv file + pkl files + png file).
 - 3 Ipython jupyter notebook : These files are concerning all the work done with data from kaggle for selecting and training a  binary classifier model.
-- Note_méthodologique.odt: French document to explain who we have selected, train and interpreted our scoring model
+- Note_méthodologique.odt: French document to explain how we have selected, train and interpreted our scoring model
 - P7_03_Support.odp: French presentation of the project
 
 The API and the Dashboard have been deployed on Heroku and are available at these adresses:
 - API: https://api-home-risk-oc-7.herokuapp.com/
-- Dahsboard:https://dashboard-strl-home-risk-oc-7.herokuapp.com/
+- Dahsboard: https://dashboard-strl-home-risk-oc-7.herokuapp.com/
 
 Python librairies needed for the API are the following:
 python = 3.8.8
