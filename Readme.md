@@ -21,7 +21,7 @@ Please note that they also have specific github repository for deployment on Her
 - Dahsboard: https://github.com/YannickSenechal29/API_home_risk.git
 
 Python librairies needed for the API are the following:
-python = 3.8.8
+python = 3.8.11
 pandas=1.3.3
 numpy=1.20.3
 scikit-learn=0.24.2
@@ -32,7 +32,7 @@ gunicorn=20.1.0
 
 
 Python librairies needed for the Dashboard are the following:
-python = 3.8.8
+python = 3.8.11
 pandas=1.3.3
 numpy=1.20.3
 scikit-learn=0.24.2
