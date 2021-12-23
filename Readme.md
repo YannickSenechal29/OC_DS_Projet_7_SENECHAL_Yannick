@@ -17,8 +17,8 @@ The API and the Dashboard have been deployed on Heroku and are available at thes
 - Dahsboard: https://dashboard-strl-home-risk-oc-7.herokuapp.com/
 
 Please note that they also have specific github repository for deployment on Heroku:
-- API: https://github.com/YannickSenechal29/Dashboard_home_risk.git
-- Dahsboard: https://github.com/YannickSenechal29/API_home_risk.git
+- API: https://github.com/YannickSenechal29/API_home_risk.git
+- Dahsboard: https://github.com/YannickSenechal29/Dashboard_home_risk.git 
 
 Python librairies needed for the API are the following:
 python = 3.8.11
